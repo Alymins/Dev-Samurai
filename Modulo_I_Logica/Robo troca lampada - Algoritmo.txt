@@ -1,0 +1,18 @@
+# Robo que troca lampada automaticamente
+
+enquanto (ligado)
+    1. se (busca lampada queimada)
+        1.1. pega escada
+        1.2. pega lampada nova
+        1.3. caminha ate a lampada
+    2. se (estiver fora de alcance)
+        2.1 coloca a escada
+        2.2 sobe a escada
+    3. tira lampada antiga
+    4. guarda lampada antiga
+    5. colaca lampada nova
+    6. se (tiver colocado a escada)
+        6.1 descer a escada
+        6.2 pegar a escada
+    7. guardar escada
+    8. jogar a lampada antiga no lixo
