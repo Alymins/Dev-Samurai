@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping-Pong</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    
+    <canvas></canvas>
+    <script>
+        const canvasE1 = document.querySelector("canvas");
+        const canvasCtx = canvasE1.getContext("2d");
+        const paddleHeight = 200
+        const gapX = 10
+        const mouse = {
+            x: 0,
+            y: 0
+        }
+        let isStopped = true
+        var idTimeout = 0
+
+        const field = {
+            w: window.innerWidth,
+            h: window.innerHeight,
+            draw: function() {
+            canvasCtx.fillStyle = "#286047";
+            canvasCtx.fillRect(0, 0,  this.w,  this.h);
+            }
+        }
+
+        const centerLine = {
+            w: 15,
+            h: field.h,
+            draw: function() {
+                canvasCtx.fillStyle = "#ffffff"
+                canvasCtx.fillRect(
+                    field.w / 2 - this.w / 2,
+                    0,
+                    this.w,
+                    this.h
+                )
+            }
+        }
+
+        const leftPaddle = {
+            y: field.h / 2 - paddleHeight / 2,
+            x: gapX,
+            w: centerLine.w,
+            h: paddleHeight,
+            _move: function (){
+                this.y = mouse.y - this.h / 2
+            },
+            draw: function (){
+                canvasCtx.fillStyle = "#ffffff"
+                canvasCtx.fillRect(this.x, this.y, this.w, this.h)
+
+                this._move()
+            }
+        }
+        
+        const rightPaddle = {
+            y: field.h / 2 - paddleHeight / 2,
+            x: field.w - gapX - centerLine.w,
+            w: centerLine.w,
+            h: paddleHeight,
+            speed: 5,
+            speedUp: function(){
+                if (this.speed < 25){
+                    this.speed += 2;
+                }
+            },
+            _move: function(){
+                if (this.y + this.h / 2 < ball.y + ball.r){
+                    this.y += this.speed
+                } else {
+                    this.y -=this.speed
+                }
+            },
+            draw: function (){
+                canvasCtx.fillStyle = "#ffffff"
+                canvasCtx.fillRect(this.x, this.y, this.w, this.h)
+
+                this._move()
+            }
+        }
+
+        const score = {
+            player: 0,
+            computer: 0,
+            x: 0,
+            y: 50,
+            increasePlayer: function() {
+                this.player++;
+            },
+            increaseComputer: function() {
+                this.computer++;
+            },
+            draw: function() {
+                canvasCtx.font = "bold 72px Arial"
+                canvasCtx.textAlign = "center"
+                canvasCtx.textBaseline = "top"
+                canvasCtx.fillStyle = "#01341D"
+
+                // Placar Esquerdo 
+                canvasCtx.fillText(this.player, field.w/4, 50)
+            
+                // Placar Direito
+                canvasCtx.fillText(this.computer, field.w/4 + field.w/2, 50)
+            }
+        }
+
+        const ball = {
+            x: field.w/2,
+            y: field.h/2,
+            r: 20,
+            speed: 7,
+            directionX: 1,
+            directionY: 1,
+            _calcPosition_v2: function (){
+                // Colisão Laterais do Campo   
+                if (this.y > field.h - this.r  || this.y < this.r){
+                    this._reverseY()
+                    this._collisionY()
+                }
+
+                // Colisão dos raquetes
+                if (
+                    this.x > field.w - this.r - rightPaddle.w - gapX && 
+                    this.y + this.r > rightPaddle.y &&
+                    this.y - this.r < rightPaddle.y + rightPaddle.h ||
+                    this.x < this.r + gapX + leftPaddle.w &&
+                    this.y + this.r > leftPaddle.y &&
+                    this.y - this.r < leftPaddle.y + leftPaddle.h
+                ){
+                    this._reverseX()
+                    this._collisionX()
+
+                    if (
+                        this.x >= gapX && this.x <= gapX + leftPaddle.w + this.r ||
+                        this.x <= field.w - gapX && this.x >= field.w - gapX - rightPaddle.w - this.r
+                    ) {
+                        this._reverseY();
+                        this._collisionY();
+                    }
+                }
+
+                // Marcação dos pontos
+                if (this.x > field.w){
+                    score.increasePlayer();
+                    this._pointUp();
+                } else if (this.x < 0){
+                    score.increaseComputer();
+                    this._pointUp();
+                }
+            },
+
+            _calcPosition: function (){ 
+                if (this.x > field.w - this.r - rightPaddle.w - gapX){
+                    if (
+                        this.y + this.r > rightPaddle.y &&
+                        this.y - this.r < rightPaddle.y + rightPaddle.h
+                    ){
+                        this._reverseX()
+                        this._collisionX()
+                    } else{
+                        score.increasePlayer();
+                        this._pointUp()
+                    }
+                }
+                else if (this.x - this.r - gapX  - rightPaddle.w < 0){
+                    if (
+                        this.y + this.r > leftPaddle.y &&
+                        this.y - this.r < leftPaddle.y + leftPaddle.h
+                    ){
+                        this._reverseX()
+                        this._collisionX()
+                    } else{
+                        score.increaseComputer();
+                        this._pointUp()
+                    }
+                }
+
+                // Laterais do campo
+                if (this.y > field.h - this.r  || this.y < this.r){
+                    this._reverseY()
+                    this._collisionY()
+                }
+            },
+            _speedUp: function() {
+                if (this.speed < 25){
+                    this.speed += 3
+                }
+            },
+
+            _pointUp: function() {
+                this.x = field.w/2
+                this.y = field.h/ 2
+
+                this._speedUp();
+                rightPaddle.speedUp()
+            },
+            _reverseX: function (){
+                this.directionX *= -1
+            },
+            _reverseY: function (){
+                this.directionY *= -1
+            },
+            _collisionX: function() {
+                this.x += this.directionX  * this.speed * (1 + Math.random())
+            },
+            _collisionY: function() {
+                this.y += this.directionY  * this.speed * (1 + Math.random())
+            },
+
+            _move: function() {
+                this.x += this.directionX * this.speed;
+                this.y += this.directionY * this.speed;
+            },
+            draw: function() {
+                canvasCtx.fillStyle = "#ffffff"
+                canvasCtx.beginPath()
+                canvasCtx.arc(
+                    this.x,
+                    this.y,
+                    this.r,
+                    0,
+                    2 * Math.PI,
+                    false
+                )
+                canvasCtx.fill()
+                // this._calcPosition()
+                this._calcPosition_v2()
+                this._move()
+            }
+        }
+
+        function setup(){
+            canvasE1.width = canvasCtx.width = field.w;
+            canvasE1.height = canvasCtx.height = field.h;
+        }
+
+        function draw(){
+            // Campo
+            field.draw()
+
+            // Linha Central
+            centerLine.draw()
+            
+            // Raquetes 
+            // Raquete Esquerda
+            leftPaddle.draw()
+
+            // Raquete Direita
+            rightPaddle.draw()
+
+            // Placar
+            score.draw()
+            
+            // Bola
+            ball.draw()
+
+        }
+
+        /**
+         * Behaves the same as setTimeout except uses requestAnimationFrame() where possible for better performance
+         * @param {function} fn The callback function
+         * @param {int} delay The delay in milliseconds
+         */
+
+        window.requestTimeout = function(fn, delay) {
+            if( !window.requestAnimationFrame      	&& 
+                !window.webkitRequestAnimationFrame && 
+                !(window.mozRequestAnimationFrame && window.mozCancelRequestAnimationFrame) && // Firefox 5 ships without cancel support
+                !window.oRequestAnimationFrame      && 
+                !window.msRequestAnimationFrame)
+                    return window.setTimeout(fn, delay);
+                    
+            var start = new Date().getTime(),
+                handle = new Object();
+                
+            function loop(){
+                var current = new Date().getTime(),
+                    delta = current - start;
+                    
+                delta >= delay ? fn.call() : handle.value = requestAnimationFrame(loop);
+            };
+            
+            handle.value = requestAnimationFrame(loop);
+            return handle;
+        };
+
+        /**
+         * Behaves the same as clearInterval except uses cancelRequestAnimationFrame() where possible for better performance
+         * @param {int|object} fn The callback function
+         */
+        window.clearRequestTimeout = function(handle) {
+            window.cancelAnimationFrame ? window.cancelAnimationFrame(handle.value) :
+            window.webkitCancelRequestAnimationFrame ? window.webkitCancelRequestAnimationFrame(handle.value)	:
+            window.mozCancelRequestAnimationFrame ? window.mozCancelRequestAnimationFrame(handle.value) :
+            window.oCancelRequestAnimationFrame	? window.oCancelRequestAnimationFrame(handle.value) :
+            window.msCancelRequestAnimationFrame ? msCancelRequestAnimationFrame(handle.value) :
+            clearTimeout(handle);
+        };
+
+        function startGame(){
+            let div = document.getElementById("stopScreen")
+            if (div != null){
+                div.remove()
+            }
+
+            draw()
+            idTimeout = requestTimeout(startGame, 1000/60)
+        }
+
+        function stopGame(){
+            clearRequestTimeout(idTimeout)
+
+            const div = document.createElement("div");
+            
+            div.id = "stopScreen"
+
+            div.style.display = "flex"; 
+            div.style.flexDirection = "column";
+            div.style.justifyContent = "center";
+            div.style.alignItems = "center";
+
+            div.style.position = "absolute";
+            div.style.top = "0";
+            div.style.left = "0";
+
+            div.style.backgroundColor = "rgba(0,0,0, 85%)";
+            div.style.color = "#fff";
+            
+            div.style.fontSize = '28pt'
+            div.style.fontWeight = 'bold'
+            div.style.fontFamily = 'Arial'
+
+            div.style.textAlign = "center"
+            div.style.verticalAlign = "center"
+            
+            div.style.height = "100vh";
+            div.style.width = "100vw";
+
+            const paragraph1 = document.createElement("p");
+            paragraph1.innerHTML = "Press SPACE to Start the game";
+            paragraph1.style.margin = "150px";
+
+            const paragraph2 = document.createElement("p");
+            paragraph2.innerHTML = 'Press SPACE to stop the Game';
+            paragraph2.style.fontSize = "12pt"
+            paragraph2.style.fontWeight = 'normal'
+
+            div.appendChild(paragraph1)
+            div.appendChild(paragraph2)
+
+            document.body.append(div)
+        }
+
+        setup()
+        draw()
+
+        stopGame()
+
+        canvasE1.addEventListener('mousemove', function(e){
+            mouse.x = e.x,
+            mouse.y = e.y
+
+        })
+                
+        document.body.onkeyup = function(e) {
+            if (e.key == " " ||
+                e.code == "Space" ||      
+                e.keyCode == 32      
+            ) {
+                if (isStopped){
+                    console.log("Jogo Pausado")
+                    isStopped = false
+                    startGame()
+                } else {
+                    console.log("Começou..")
+                    isStopped = true
+                    stopGame()
+                }
+            }
+        }
+    </script>
+</body>
+</html>
