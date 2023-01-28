@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div style="background-color: blueviolet;">
+      <span class="exit">X</span>
+    </div>
+    <a href="https://devsamurai.com.br">Clique me</a>
+
+    <script>
+      // https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event
+
+      const button = document.querySelector(".exit")
+      button.addEventListener("click", (e) => {
+        console.log("Clicou no botão")
+        console.log(e)
+        e.target.parentNode.remove()
+        // console.log(e.)
+      })
+
+      const hyperlink = document.querySelector("a")
+      hyperlink.addEventListener("click", (event) => {
+        event.preventDefault()
+        console.log("Clicou no hyperlink")
+      })
+    </script>
+  </body>
+</html>

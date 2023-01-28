@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <script>
+      // neste momento da execução o elemento #title ainda não existe...
+      // const el = document.getElementById("title")
+      // console.log("el", el)
+
+      // o evento DOMContentLoaded garante que a função seja executada após a página carregada.
+      // https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event
+      document.addEventListener("DOMContentLoaded", () => {
+        const el = document.getElementById("title")
+        console.log("el", el)
+      })
+    </script>
+
+    <h1 id="title">Minha página</h1>
+  </body>
+</html>

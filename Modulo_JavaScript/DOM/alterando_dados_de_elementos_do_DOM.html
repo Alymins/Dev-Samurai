@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Curriculum</title>
+  </head>
+  <body>
+    <img src="foto.png" width="100" />
+    <h1 id="person-name" class="text">Seu Nome</h1>
+    <h2>Programador JavaScript</h2>
+    <p class="text">
+      Conhecimento em programação Frontend, Backend para desenvolvimento de
+      sistemas Fullstack.
+    </p>
+    <p>
+      Para mais detalhes, por favor, visite meu
+      <a href="https://github.com/felipefontoura">Github</a> ou
+      <a href="https://devsamurai.com.br">Portfólio</a>.
+    </p>
+    <script>
+      // Alterando um objeto do DOM
+      // Ref.: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
+
+      const titleEl = document.querySelector("#person-name")
+      console.log("titleEl value:", titleEl.innerHTML)
+
+      titleEl.innerHTML = "Harrison Marques Freitas"
+      titleEl.style.color = "green"
+    </script>
+  </body>
+</html>

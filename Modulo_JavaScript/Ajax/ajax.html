@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <button>Recuperar Dados</button>
+    <br />
+    <br />
+    <script>
+      const loadData = () => {
+        const xhr = new XMLHttpRequest()
+
+        xhr.open("GET", "https://api.github.com/users/Alymins")
+        xhr.send(null)
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState === 4) {
+            const res = JSON.parse(xhr.responseText)
+
+            const name = res.name
+            const avatarUrl = res.avatar_url
+            const userRepoUrl = res.repos_url
+
+            const mainDiv = document.createElement('div')
+            
+            const headerDiv = document.createElement('div')
+            headerDiv.style.display = "flex"
+            headerDiv.style.alignItems = "center"
+            headerDiv.style.justifyContent = 'center'
+            headerDiv.style.gap = '20px'
+            headerDiv.style.borderBottom = "1px black solid"
+            headerDiv.style.padding = "15px"
+
+            const repoDiv = document.createElement('div')
+
+            mainDiv.appendChild(headerDiv)
+
+            // <img src="https://avatars.githubusercontent.com/u/281622?v=4" width="128" />
+            const avatarEl = document.createElement("img")
+            avatarEl.setAttribute("src", avatarUrl)
+            avatarEl.setAttribute("width", "128")
+            avatarEl.style.borderRadius = "50%"
+            // console.log(avatarEl)
+
+            // <h1>Felipe Fontoura</h1>
+            const nameEl = document.createElement("h1")
+            nameEl.innerText = name
+
+            const titleEl = document.createElement('h2')
+            titleEl.innerText = "Repositórios"
+
+            const repoItemList = document.createElement("ul")
+
+            const repoXhr = new XMLHttpRequest()
+
+            repoXhr.open("GET", userRepoUrl)
+            repoXhr.send(null)
+            repoXhr.onreadystatechange = () => {
+              if (repoXhr.readyState === 4) {
+                const repoRes = JSON.parse(repoXhr.responseText)
+
+                for (const repo of repoRes) {
+                  const repoName = repo.name
+                  const repoUrl = repo.html_url
+                  
+                  const repoItem = document.createElement("li")
+                  const repoLink = document.createElement('a')
+
+                  repoLink.innerText = repoName
+                  repoLink.setAttribute('href',repoUrl)
+                  
+                  repoItem.appendChild(repoLink)
+                  repoItemList.appendChild(repoItem)
+                }
+              }
+            }
+
+            headerDiv.appendChild(avatarEl)
+            headerDiv.appendChild(nameEl)
+
+            repoDiv.appendChild(titleEl)
+            repoDiv.appendChild(repoItemList)
+
+            mainDiv.appendChild(headerDiv)
+            mainDiv.appendChild(repoDiv)
+
+            document.body.appendChild(mainDiv)
+          }
+        }
+      }
+
+      const buttonEl = document.querySelector("button")
+      buttonEl.addEventListener("click", loadData)
+    </script>
+  </body>
+</html>
