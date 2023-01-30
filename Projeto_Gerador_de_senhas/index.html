@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@600&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="reset.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main>
+        <section class="header">
+            <h1 class="title">Password Generator</h1>
+            <p class="subtitle">Use our online generator to create a strong and secure password</p>
+        </section>
+
+        <section class="box">
+            <div class="password">
+                <div class="text">
+                    <input type="text" name="password" id="password" readonly>
+                </div>
+                <div class="actions">
+                    <button id="copy-1">
+                        <img src="copy.svg" alt="copy button" width="42" srcset="">
+                    </button>
+                    <button id="refresh">
+                        <img src="refresh.svg" alt="refresh button" width="42" srcset="">
+                    </button>
+                </div>
+            </div>
+            <div class="security-indicator">
+                <div id="security-indicator-bar" class="bar" style="width: 90%"></div>
+            </div>
+        </section>
+
+        <section class="box customize">
+            <h3 class="title">Customize</h3>
+            <div class="actions">
+                <div class="password-length">
+                    <p>Size: <span id="password-length-text">16</span></p>
+                    <input type="range" name="passwordLength" id='passwordLength' class="slider" value="16" min="4"
+                        max="64">
+                </div>
+                <div class="config">
+                    <label for="uppercase-check" class="checkbox-container">
+                        <span class="text">Uppercase</span>
+                        <input type="checkbox" name="uppercase-check" id="uppercase-check" checked>
+                        <span class="checkmark"></span>
+                    </label>
+                    <label for="symbol-check" class="checkbox-container">
+                        <span class="text">Symbols</span>
+                        <input type="checkbox" name="symbol-check" id="symbol-check" checked>
+                        <span class="checkmark"></span>
+                    </label>
+                    <label for="number-check" class="checkbox-container">
+                        <span class="text">Numbers</span>
+                        <input type="checkbox" name="number-check" id="number-check" checked>
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+
+        <div class="submit">
+            <button id="copy-2">Clip password</button>
+        </div>
+    </main>
+    <script>
+        const passLength = document.querySelector('#passwordLength')
+        const passwordLengthText = document.querySelector('#password-length-text')
+        const inputPassword = document.querySelector('#password')
+        const securityIndicatorBar = document.querySelector('#security-indicator-bar')
+
+        const numberCheck = document.querySelector("#number-check")
+        const symbolCheck = document.querySelector('#symbol-check')
+        const uppercaseCheck = document.querySelector('#uppercase-check')
+
+        function randomInteger(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function passwordGenerator() {
+            let chars = 'abcdefghjklmnpqrstuvwxyz'
+            const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+            const numbers = '123456789'
+            const symbols = '?!@&*()[]{},.;'
+
+
+            let pass = ""
+
+            if (uppercaseCheck.checked) { chars += uppercase }
+
+            const hasNumber = true
+            if (numberCheck.checked) { chars += numbers }
+
+            const hasSymbol = true
+            if (symbolCheck.checked) { chars += symbols }
+
+            for (let i = 0; i < passLength.value; i++) {
+                let randomNumber = randomInteger(0, chars.length - 1)
+                pass += chars.substring(randomNumber, randomNumber + 1)
+            }
+
+            inputPassword.value = pass
+            calculateQuality(chars)
+            calculateFontSize()
+        }
+
+        function calculateQuality(seed) {
+            // L*25% + U*15% + S*35% + N25% 
+            let weightCharset = 0.3
+            if (uppercaseCheck.checked && numberCheck.checked && symbolCheck.checked) {
+               weightCharset += 0.6 -  (passLength.value / 64 < 0.45 ? passLength.value / 64 : 0.45)
+            } else if (
+                (uppercaseCheck.checked && numberCheck.checked) ||
+                (uppercaseCheck.checked && symbolCheck.checked) ||
+                (numberCheck.checked && symbolCheck.checked)
+            ) {
+                weightCharset += 0.5 - (passLength.value / 64 < 0.40 ? passLength.value / 64 : 0.40)
+            } else if (
+                uppercaseCheck.checked || symbolCheck.checked || numberCheck.checked
+            ) {
+                weightCharset +=  0.3 - (passLength.value / 64 < 0.30 ? passLength.value / 64 : 0.30)
+            } else {
+                weightCharset += 0.1 - (passLength.value / 64 < 0.20 ? passLength.value / 64 : 0.20)
+            }
+
+            const entropy = Math.round(Math.log2(seed.length**passLength.value) * weightCharset)    
+
+            if (entropy >= 100){
+                securityIndicatorBar.style.width = 100 + "%"
+                securityIndicatorBar.classList.add('completed')
+                securityIndicatorBar.classList.remove('warning')
+                securityIndicatorBar.classList.remove('critical')
+            } else if (entropy > 60){
+                securityIndicatorBar.style.width = entropy + "%"
+                securityIndicatorBar.classList.add('safe')
+                securityIndicatorBar.classList.remove('completed')
+                securityIndicatorBar.classList.remove('warning')
+                securityIndicatorBar.classList.remove('critical')
+            } else if (entropy >= 35) {
+                securityIndicatorBar.style.width = entropy + "%"
+                securityIndicatorBar.classList.add('warning')
+                securityIndicatorBar.classList.remove('completed')
+                securityIndicatorBar.classList.remove('safe')
+                securityIndicatorBar.classList.remove('critical')
+            } else {
+                securityIndicatorBar.style.width = entropy + "%"
+                securityIndicatorBar.classList.add('critical')
+                securityIndicatorBar.classList.remove('completed')
+                securityIndicatorBar.classList.remove('warning')
+                securityIndicatorBar.classList.remove('safe')
+            } 
+
+        }
+
+        function calculateFontSize() {
+            if (passLength.value > 45){
+                inputPassword.classList.add('font-xs')
+                inputPassword.classList.remove('font-sm')
+                inputPassword.classList.remove('font-md')
+            } else if (passLength.value > 32) {
+                inputPassword.classList.add('font-sm')
+                inputPassword.classList.remove('font-xs')
+                inputPassword.classList.remove('font-md')
+            } else if (passLength.value > 22) {
+                inputPassword.classList.add('font-md')
+                inputPassword.classList.remove('font-sm')
+                inputPassword.classList.remove('font-xs')
+            } else {
+                inputPassword.classList.remove('font-xs')
+                inputPassword.classList.remove('font-sm')
+                inputPassword.classList.remove('font-md')
+            }
+        }
+        
+        function copy() {
+            navigator.clipboard.writeText(inputPassword.value)
+        }
+
+        passLength.addEventListener('input', () => {
+            passwordLengthText.innerText = passLength.value
+            passwordGenerator()
+        })
+
+        numberCheck.addEventListener('input', passwordGenerator),
+        symbolCheck.addEventListener('input', passwordGenerator)
+        uppercaseCheck.addEventListener('input', passwordGenerator)
+
+        document.querySelector("#refresh").addEventListener('click', passwordGenerator)
+        document.querySelector('#copy-1').addEventListener('click', copy)
+        document.querySelector('#copy-2').addEventListener('click', copy)
+
+        passwordGenerator()
+    </script>
+</body>
+
+</html>
