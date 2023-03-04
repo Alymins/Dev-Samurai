@@ -112,50 +112,66 @@
             }
 
             inputPassword.value = pass
-            calculateQuality(chars)
+            calculateQuality()
             calculateFontSize()
         }
 
-        function calculateQuality(seed) {
-            // L*25% + U*15% + S*35% + N25% 
-            let weightCharset = 0.3
-            if (uppercaseCheck.checked && numberCheck.checked && symbolCheck.checked) {
-               weightCharset += 0.6 -  (passLength.value / 64 < 0.45 ? passLength.value / 64 : 0.45)
-            } else if (
-                (uppercaseCheck.checked && numberCheck.checked) ||
-                (uppercaseCheck.checked && symbolCheck.checked) ||
-                (numberCheck.checked && symbolCheck.checked)
-            ) {
-                weightCharset += 0.5 - (passLength.value / 64 < 0.40 ? passLength.value / 64 : 0.40)
-            } else if (
-                uppercaseCheck.checked || symbolCheck.checked || numberCheck.checked
-            ) {
-                weightCharset +=  0.3 - (passLength.value / 64 < 0.30 ? passLength.value / 64 : 0.30)
-            } else {
-                weightCharset += 0.1 - (passLength.value / 64 < 0.20 ? passLength.value / 64 : 0.20)
+        function calculateQuality() {
+            let score = 0;
+
+
+            // Add points for password length
+            score += passLength.value * 1;
+            console.log(score)
+            
+            // Add points for uppercase, lowercase, numbers, and special characters
+            const uppercaseRegex = /[A-Z]/g;
+            const lowercaseRegex = /[a-z]/g;
+            const numberRegex = /[0-9]/g;
+            const specialRegex = /[^A-Za-z0-9]/g;
+            
+            if (inputPassword.value.match(uppercaseRegex)){
+                score += (passLength.value - inputPassword.value.replace(uppercaseRegex, '').length) * 2;
+                console.log(score)
+            }
+            if (inputPassword.value.match(lowercaseRegex)){
+                score += (passLength.value - inputPassword.value.replace(lowercaseRegex, '').length) * 2;
+                console.log(score)
+            }
+            if (inputPassword.value.match(numberRegex)){
+                score += (passLength.value - inputPassword.value.replace(numberRegex, '').length) * 4;
+                console.log(score)
+            }
+            if (inputPassword.value.match(specialRegex)){
+                score += (passLength.value - inputPassword.value.replace(specialRegex, '').length) * 6;
+                console.log(score)
             }
 
-            const entropy = Math.round(Math.log2(seed.length**passLength.value) * weightCharset)    
+            // Calculate score as percentage
+            const maxScore = 100;
+            const minScore = 0;
+            const percentageScore = Math.min(Math.max(Math.round(score / maxScore * 100), minScore), maxScore);  
+            console.log(percentageScore, score)
 
-            if (entropy >= 100){
-                securityIndicatorBar.style.width = 100 + "%"
+            if (percentageScore >= 100){
+                securityIndicatorBar.style.width = percentageScore + "%"
                 securityIndicatorBar.classList.add('completed')
                 securityIndicatorBar.classList.remove('warning')
                 securityIndicatorBar.classList.remove('critical')
-            } else if (entropy > 60){
-                securityIndicatorBar.style.width = entropy + "%"
+            } else if (percentageScore > 60){
+                securityIndicatorBar.style.width = percentageScore + "%"
                 securityIndicatorBar.classList.add('safe')
                 securityIndicatorBar.classList.remove('completed')
                 securityIndicatorBar.classList.remove('warning')
                 securityIndicatorBar.classList.remove('critical')
-            } else if (entropy >= 35) {
-                securityIndicatorBar.style.width = entropy + "%"
+            } else if (percentageScore >= 35) {
+                securityIndicatorBar.style.width = percentageScore + "%"
                 securityIndicatorBar.classList.add('warning')
                 securityIndicatorBar.classList.remove('completed')
                 securityIndicatorBar.classList.remove('safe')
                 securityIndicatorBar.classList.remove('critical')
             } else {
-                securityIndicatorBar.style.width = entropy + "%"
+                securityIndicatorBar.style.width = percentageScore + "%"
                 securityIndicatorBar.classList.add('critical')
                 securityIndicatorBar.classList.remove('completed')
                 securityIndicatorBar.classList.remove('warning')
