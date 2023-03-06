@@ -36,7 +36,7 @@ Siga estas etapas para instalar e executar o projeto:
 
 ## Contribuindo
 
-Este projeto é parte do meu portifolio inicial e tem como objetivo demostrar meus conhecimentos em programação. Sinta-se livre para enviar sugestões e melhorias. Basta seguir estas etapas:
+Este projeto é parte do meu portfólio inicial e tem como objetivo demostrar meus conhecimentos em programação. Sinta-se livre para enviar sugestões e melhorias. Basta seguir estas etapas:
 
 1. Faça um fork deste repositório
 2. Crie uma nova branch com suas alterações:
