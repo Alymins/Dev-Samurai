@@ -2,7 +2,7 @@
 
 Este é um jogo de ping pong simples desenvolvido com JavaScript, CSS e HTML. Neste jogo, o usuário pode rebater uma bola com uma raquete movendo-a no eixo y e marcar pontos quando a bola passa pelo campo adversário.
 
-![Ping Pong Game Screenshot]("/Projeto_Ping_Pong/Ping-Pong.png")
+![Ping Pong Game Screenshot](/Projeto_Ping_Pong/Ping-Pong.png)
 
 ## Como jogar
 
